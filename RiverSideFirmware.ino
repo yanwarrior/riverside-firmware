@@ -1,14 +1,3 @@
-/**
- * Novembyte adalah sebuah program mikrokontroller berbasis ESP yang
- * berfokus pada chip esp8266. 
- * 
- * Novembyte digunakan untuk tujuan pendidikan dan merupakan program yang dapat berkomunikasi dengan
- * protokol HTTP, dengan begitu developer, educator dan siapun
- * bisa menggunakan dan membuat koneksi dengan banyak platform dan
- * bahasa pemrograman apapun.
- * 
- */
-
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
