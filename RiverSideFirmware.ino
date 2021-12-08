@@ -1,15 +1,21 @@
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "ThingSpeak.h"
+
 
 IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 bool stateWiFiConnectionProgress  = false;
-String deviceName = "RiverSide";
-String accessPointSSID = deviceName + " - " + ESP.getChipId();
+String deviceName = "River";
+String accessPointSSID = deviceName + " " + ESP.getChipId();
 String accessPointPassword = "12345678";
 float vref                        = 3.3;
 float resolution              = vref / 1023.0;
@@ -26,6 +32,12 @@ String apPassword     = "12345678";
 bool wifiOpen         = false;
 String apIP           = "192.168.1.1";
 int myTone            = 0;
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET     -1
+#define SCREEN_ADDRESS 0x3C 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 WiFiClient client;
 AsyncWebServer server(80);
@@ -138,7 +150,15 @@ void systemConnectWiFi() {
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
       Serial.println("Try to connect...");
-      delay(1000);
+      //      delay(1000);
+      delay(800);
+      display.clearDisplay();
+    
+      display.setTextColor(WHITE);
+      display.setCursor(0, 10);
+      // Display static text
+      display.println("Connecting to WiFi");
+      display.display(); 
     }
     Serial.println("WiFi connected!");
     Serial.println(WiFi.localIP());
@@ -148,6 +168,16 @@ void systemConnectWiFi() {
     WiFi.setAutoReconnect(true);
     WiFi.persistent(true);
     digitalWrite(LED_BUILTIN, LOW);
+
+    delay(400);
+    display.clearDisplay();
+  
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 10);
+    // Display static text
+    display.println(WiFi.localIP());
+    display.display(); 
   }
 }
 
@@ -180,6 +210,20 @@ void systemSetupRiverSide() {
   server.begin();
   delay(200);
   Serial.println(accessPointSSID);
+
+  delay(400);
+  display.clearDisplay();
+
+  display.setTextColor(WHITE);
+  display.setCursor(4, 20);
+  display.println("S:" + accessPointSSID);
+  display.setCursor(4, 30);
+  display.println("P:" + accessPointPassword);
+  display.setCursor(4, 40);
+  display.println("RiverSide");
+  display.setCursor(4, 50);
+  display.println("by @riverlabs");
+  display.display(); 
 }
 
 
@@ -352,6 +396,18 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
+  
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  display.display();
+  delay(2000); // Pause for 2 seconds
+
+  // Clear the buffer
+  display.clearDisplay();
   systemSetupRiverSide();
 }   
 
